@@ -16,13 +16,13 @@ class Data:
                 pin_memory=not args.cpu
             )
 
-        if args.data_test in ['Set5', 'Set14', 'B100', 'Urban100', 'Manga109']:
+        if args.data_test in ['Set5', 'Set14','Urban100', 'Manga109']:
             module_test = import_module('data.benchmark')
             testset = getattr(module_test, 'Benchmark')(args, name=args.data_test, train=False)
         else:
-            module_test = import_module('data.' +  args.data_test.lower())
-            testset = getattr(module_test, args.data_test)(args, train=False)
-
+            module_test = import_module('data.' +  'face_test')
+            testset = getattr(module_test, 'face_test')(args, train=False)
+        
         self.loader_test = DataLoader(
             testset,
             batch_size=1,

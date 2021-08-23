@@ -15,23 +15,20 @@ class Trainer():
         self.loss = my_loss
         self.optimizer = utility.make_optimizer(opt, self.model)
         self.scheduler = utility.make_scheduler(opt, self.optimizer)
-        self.dual_models = self.model.dual_models
-        self.dual_optimizers = utility.make_dual_optimizer(opt, self.dual_models)
-        self.dual_scheduler = utility.make_dual_scheduler(opt, self.dual_optimizers)
         self.error_last = 1e8
 
     def train(self):
         epoch = self.scheduler.last_epoch + 1
-        lr = self.scheduler.get_lr()[0]
+        lr = self.scheduler.get_last_lr()[0]
 
         self.ckp.write_log(
             '[Epoch {}]\tLearning rate: {:.2e}'.format(epoch, Decimal(lr))
         )
         self.loss.start_log()
 
-        # for name, param in self.model.named_parameters():
-        #     if name.split('.')[1] == 'H2A2SR':
-        #         param.requires_grad=False
+        for name, param in self.model.named_parameters():
+            if name.split('.')[1] == 'H2A2SR':
+                param.requires_grad=False
         self.model.train()
         timer_data, timer_model = utility.timer(), utility.timer()
         for batch, (lr, hr, _) in enumerate(self.loader_train):
@@ -41,34 +38,19 @@ class Trainer():
             
             self.optimizer.zero_grad()
 
-            for i in range(len(self.dual_optimizers)):
-                self.dual_optimizers[i].zero_grad()
-
             # forward
             sr = self.model(lr[0])
-            sr2lr = []
-            for i in range(len(self.dual_models)):
-                sr2lr_i = self.dual_models[i](sr[1])
-                sr2lr.append(sr2lr_i)
-
             # compute primary loss
-            loss_primary = self.loss(sr[-1], hr)
-            loss_primary += self.loss(sr[0], lr[0])
-
-            # compute dual loss
-            loss_dual = self.loss(sr2lr[0], lr[0])
-            for i in range(1, len(self.scale)):
-                loss_dual += self.loss(sr2lr[i], lr[i])
+            print(sr.size())
+            print(hr.size())
+            loss_primary = self.loss(sr, hr)
 
             # compute total loss
-            loss = loss_primary + self.opt.dual_weight * loss_dual
-            # loss = loss_primary 
+            loss = loss_primary 
 
             if loss.item() < self.opt.skip_threshold * self.error_last:
                 loss.backward()                
                 self.optimizer.step()
-                for i in range(len(self.dual_optimizers)):
-                    self.dual_optimizers[i].step()
             else:
                 print('Skip this batch {}! (Loss: {})'.format(
                     batch + 1, loss.item()
@@ -121,7 +103,6 @@ class Trainer():
                             sr, hr, s, self.opt.rgb_range,
                             benchmark=self.loader_test.dataset.benchmark
                         )
-
                     # save test results
                     if self.opt.save_results:
                         self.ckp.save_results_nopostfix(filename, sr, s)
@@ -145,8 +126,6 @@ class Trainer():
 
     def step(self):
         self.scheduler.step()
-        for i in range(len(self.dual_scheduler)):
-            self.dual_scheduler[i].step()
 
     def prepare(self, *args):
         device = torch.device('cpu' if self.opt.cpu else 'cuda')

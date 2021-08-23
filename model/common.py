@@ -50,43 +50,43 @@ class Upsampler(nn.Sequential):
         super(Upsampler, self).__init__(*m)
 
 
-class DownBlock(nn.Module):
-    def __init__(self, opt, scale, nFeat=None, in_channels=None, out_channels=None):
-        super(DownBlock, self).__init__()
-        negval = opt.negval
+# class DownBlock(nn.Module):
+#     def __init__(self, opt, scale, nFeat=None, in_channels=None, out_channels=None):
+#         super(DownBlock, self).__init__()
+#         negval = opt.negval
 
-        if nFeat is None:
-            nFeat = opt.n_feats
+#         if nFeat is None:
+#             nFeat = opt.n_feats
         
-        if in_channels is None:
-            in_channels = opt.n_colors
+#         if in_channels is None:
+#             in_channels = opt.n_colors
         
-        if out_channels is None:
-            out_channels = opt.n_colors
+#         if out_channels is None:
+#             out_channels = opt.n_colors
 
         
-        dual_block = [
-            nn.Sequential(
-                nn.Conv2d(in_channels, nFeat, kernel_size=3, stride=2, padding=1, bias=False),
-                nn.LeakyReLU(negative_slope=negval, inplace=True)
-            )
-        ]
+#         dual_block = [
+#             nn.Sequential(
+#                 nn.Conv2d(in_channels, nFeat, kernel_size=3, stride=2, padding=1, bias=False),
+#                 nn.LeakyReLU(negative_slope=negval, inplace=True)
+#             )
+#         ]
 
-        for _ in range(1, int(np.log2(scale))):
-            dual_block.append(
-                nn.Sequential(
-                    nn.Conv2d(nFeat, nFeat, kernel_size=3, stride=2, padding=1, bias=False),
-                    nn.LeakyReLU(negative_slope=negval, inplace=True)
-                )
-            )
+#         for _ in range(1, int(np.log2(scale))):
+#             dual_block.append(
+#                 nn.Sequential(
+#                     nn.Conv2d(nFeat, nFeat, kernel_size=3, stride=2, padding=1, bias=False),
+#                     nn.LeakyReLU(negative_slope=negval, inplace=True)
+#                 )
+#             )
 
-        dual_block.append(nn.Conv2d(nFeat, out_channels, kernel_size=3, stride=1, padding=1, bias=False))
+#         dual_block.append(nn.Conv2d(nFeat, out_channels, kernel_size=3, stride=1, padding=1, bias=False))
 
-        self.dual_module = nn.Sequential(*dual_block)
+#         self.dual_module = nn.Sequential(*dual_block)
 
-    def forward(self, x):
-        x = self.dual_module(x)
-        return x
+#     def forward(self, x):
+#         x = self.dual_module(x)
+#         return x
 
 
 ## Channel Attention (CA) Layer

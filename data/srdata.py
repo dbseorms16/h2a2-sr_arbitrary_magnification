@@ -23,8 +23,7 @@ class SRData(data.Dataset):
     
     def __getitem__(self, idx):
         lr, hr, filename = self._load_file(idx)
-
-        lr, hr = self.get_patch(lr, hr)
+        # lr, hr = self.get_patch(lr, hr)
         lr, hr = common.set_channel(lr, hr, n_channels=self.args.n_colors)
         
         lr_tensor, hr_tensor = common.np2Tensor(
@@ -58,14 +57,15 @@ class SRData(data.Dataset):
             for si, s in enumerate(self.scale):
                 if self.train:
                     names_lr[si].append(os.path.join(
-                        self.dir_lr, 'X{}/{}x{}{}'.format(
-                            s, filename, s, self.ext[1]
+                        self.dir_lr, '{}x{}{}'.format(
+                            filename, s, self.ext[1]
                         )
                     ))
                 else:
                     names_lr[si].append(os.path.join(
                         self.dir_lr, 'X{}/{}x{}{}'.format(
-                            self.total_scale, filename, s, self.ext[1]
+                            s, filename, s, self.ext[1]
+                            #여기 s -> total scale로 변경하면됨
                         )
                     ))
         return names_hr, names_lr
@@ -74,7 +74,7 @@ class SRData(data.Dataset):
         self.apath = os.path.join(data_dir, self.name)
         self.dir_hr = os.path.join(self.apath, 'HR')
         self.dir_lr = os.path.join(self.apath, 'LR_bicubic')
-        self.ext = ('.png', '.png')
+        self.ext = ('.jpg', '.jpg')
 
     def _get_index(self, idx):
         if self.train:

@@ -44,13 +44,6 @@ class Checkpoint():
             trainer.optimizer.state_dict(),
             os.path.join(self.dir, 'optimizer.pt')
         )
-        dual_optimizers = {}
-        for i in range(len(trainer.dual_optimizers)):
-            dual_optimizers[i] = trainer.dual_optimizers[i]
-        torch.save(
-            dual_optimizers,
-            os.path.join(self.dir, 'dual_optimizers.pt')
-        )
 
     def add_log(self, log):
         self.log = torch.cat([self.log, log])

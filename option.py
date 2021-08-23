@@ -4,7 +4,7 @@ import numpy as np
 import math
 parser = argparse.ArgumentParser(description='DRN')
 
-parser.add_argument('--n_threads', type=int, default=6,
+parser.add_argument('--n_threads', type=int, default=4,
                     help='number of threads for data loading')
 parser.add_argument('--cpu', action='store_true',
                     help='use cpu only')
@@ -14,9 +14,9 @@ parser.add_argument('--seed', type=int, default=1,
                     help='random seed')
 parser.add_argument('--data_dir', type=str, default='./dataset',
                     help='dataset directory')
-parser.add_argument('--data_train', type=str, default='DF2K',
+parser.add_argument('--data_train', type=str, default='face_data',
                     help='train dataset name')
-parser.add_argument('--data_test', type=str, default='B100',
+parser.add_argument('--data_test', type=str, default='face_test',
                     help='test dataset name')
 parser.add_argument('--data_range', type=str, default='1-800/801-810',
                     help='train/test data range')
@@ -69,7 +69,6 @@ parser.add_argument('--save_results', action='store_true',
 
 args = parser.parse_args()
 
-utility.init_model(args)
 strscale = args.scale.split('.')
 args.int_scale = math.floor(float(strscale[0]))
 args.float_scale = float(strscale[1]) / 10
